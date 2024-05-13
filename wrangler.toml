@@ -1,0 +1,4 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "tgbot-highlights"
+main = "src/index.js"
+compatibility_date = "2024-05-12"
