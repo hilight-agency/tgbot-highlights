@@ -23,7 +23,7 @@ export default {
     async function sendMessage(body) {
       let msg = ''
       for (const pair of body.entries()) {
-        msg += pair[0] + ' ' + pair[1] + '\n'
+        msg += pair[0] !== `cf-turnstile-response` ? pair[0] + ' ' + pair[1] + '\n' : ''
       }
       return await fetch('https://api.telegram.org/bot' + env.ENV_BOT_TOKEN + '/sendMessage', {
         method: 'POST',
