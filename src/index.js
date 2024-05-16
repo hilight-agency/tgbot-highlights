@@ -34,6 +34,39 @@ export default {
         }),
       })
     }
+    /** turnstile validation */
+    async function handlePost(request) {
+      const readbody = new Response(request.body, { headers: request.headers })
+      const formdata = await readbody.formData()
+      // Turnstile injects a token in "cf-turnstile-response".
+      const token = formdata.get('cf-turnstile-response')
+      const ip = request.headers.get('CF-Connecting-IP')
+      // Validate the token by calling the
+      // "/siteverify" API endpoint.
+      let formData = new FormData()
+      formData.append('secret', env.TURNSTILE_SECRET_KEY)
+      formData.append('response', token)
+      formData.append('remoteip', ip)
+
+      const url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+      const result = await fetch(url, {
+        body: formData,
+        method: 'POST',
+      })
+
+      const outcome = await result.json()
+      if (outcome.success) {
+        const resp = await sendMessage(formdata)
+        const { contentType, result } = await gatherResponse(resp)
+        const options = { headers: { 'content-type': contentType, ...corsHeaders } }
+        return new Response(result, options)
+      } else {
+        return new Response('Not valid token', {
+          status: 405,
+          headers: corsHeaders,
+        })
+      }
+    }
 
     /** Main code */
     if (request.method === 'OPTIONS') {
@@ -41,12 +74,7 @@ export default {
         headers: corsHeaders,
       })
     } else if (request.method === 'POST' && request.url.indexOf('resend') !== -1) {
-      const readbody = new Response(request.body, { headers: request.headers })
-      const formdata = await readbody.formData()
-      const resp = await sendMessage(formdata)
-      const { contentType, result } = await gatherResponse(resp)
-      const options = { headers: { 'content-type': contentType, ...corsHeaders } }
-      return new Response(result, options)
+      return await handlePost(request, sendMessage)
     } else {
       return new Response('Method not allowed', {
         status: 405,
