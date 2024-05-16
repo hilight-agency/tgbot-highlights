@@ -4,7 +4,7 @@ export default {
     const corsHeaders = {
       'Access-Control-Allow-Headers': 'X-Requested-With, Content-Type, Accept',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Origin': env.ENV_ALLOW_ORIGIN,
+      'Access-Control-Allow-Origin': '*',
     }
     /** Working with response */
     async function gatherResponse(response) {
